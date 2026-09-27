@@ -1,0 +1,214 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Stores user language profile, level (A1-C1), streak, XP, and settings",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Authentication UID of the user",
+          "maxLength": 128
+        },
+        "email": {
+          "type": "string",
+          "description": "User email address",
+          "maxLength": 256
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Display name of the user",
+          "maxLength": 100
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "Avatar image URL or identifier",
+          "maxLength": 1024
+        },
+        "level": {
+          "type": "string",
+          "description": "CEFR English Level",
+          "enum": ["A1", "A2", "B1", "B2", "C1"]
+        },
+        "targetLanguage": {
+          "type": "string",
+          "description": "Target language being learned",
+          "maxLength": 20
+        },
+        "nativeLanguage": {
+          "type": "string",
+          "description": "Native language of the user (e.g. ar or en)",
+          "maxLength": 20
+        },
+        "xp": {
+          "type": "number",
+          "description": "Total experience points accumulated"
+        },
+        "streak": {
+          "type": "number",
+          "description": "Active daily streak in days"
+        },
+        "lastActiveDate": {
+          "type": "string",
+          "description": "Date of last activity (YYYY-MM-DD)",
+          "maxLength": 15
+        },
+        "completedLessonIds": {
+          "type": "array",
+          "description": "IDs of completed curriculum lessons"
+        },
+        "reminderEnabled": {
+          "type": "boolean",
+          "description": "Whether daily practice push/toast reminder is enabled"
+        },
+        "reminderTime": {
+          "type": "string",
+          "description": "Configured daily reminder time in HH:mm format",
+          "maxLength": 10
+        },
+        "dailyXpGoal": {
+          "type": "number",
+          "description": "Target XP for daily streak completion"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the user account was created"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when user profile was last updated"
+        }
+      },
+      "required": ["uid", "email", "displayName", "level", "xp", "streak"]
+    },
+    "PronunciationLog": {
+      "title": "Pronunciation Mistake Log",
+      "description": "Records individual mispronounced words, target IPA, spoken IPA, and advice",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique log identifier",
+          "maxLength": 128
+        },
+        "userId": {
+          "type": "string",
+          "description": "Owner user UID",
+          "maxLength": 128
+        },
+        "word": {
+          "type": "string",
+          "description": "The specific mispronounced word",
+          "maxLength": 100
+        },
+        "phoneticTarget": {
+          "type": "string",
+          "description": "Correct IPA transcription",
+          "maxLength": 100
+        },
+        "phoneticActual": {
+          "type": "string",
+          "description": "Transcribed or estimated spoken IPA",
+          "maxLength": 100
+        },
+        "feedback": {
+          "type": "string",
+          "description": "Actionable correction tip for the student",
+          "maxLength": 500
+        },
+        "scenarioId": {
+          "type": "string",
+          "description": "Associated lesson or call scenario ID",
+          "maxLength": 100
+        },
+        "accuracy": {
+          "type": "number",
+          "description": "Confidence or accuracy rating 0-100"
+        },
+        "occurrenceCount": {
+          "type": "number",
+          "description": "Frequency count of this recurring weakness"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when this mistake was registered"
+        }
+      },
+      "required": ["id", "userId", "word", "phoneticTarget", "feedback"]
+    },
+    "PracticeSession": {
+      "title": "Call Practice Session Summary",
+      "description": "Session performance statistics after AI voice call completion",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique session identifier",
+          "maxLength": 128
+        },
+        "userId": {
+          "type": "string",
+          "description": "Owner user UID",
+          "maxLength": 128
+        },
+        "scenarioId": {
+          "type": "string",
+          "description": "ID of conversation scenario",
+          "maxLength": 100
+        },
+        "scenarioTitle": {
+          "type": "string",
+          "description": "Title of conversation scenario",
+          "maxLength": 150
+        },
+        "durationSeconds": {
+          "type": "number",
+          "description": "Duration of call in seconds"
+        },
+        "score": {
+          "type": "number",
+          "description": "Overall session score 0-100"
+        },
+        "turnsCount": {
+          "type": "number",
+          "description": "Total speaking turns exchanged"
+        },
+        "strengths": {
+          "type": "array",
+          "description": "List of student strengths identified"
+        },
+        "improvements": {
+          "type": "array",
+          "description": "Actionable improvement recommendations"
+        },
+        "mispronouncedWords": {
+          "type": "array",
+          "description": "Key words flagged during this call"
+        },
+        "transcript": {
+          "type": "array",
+          "description": "Conversation turns exchanged during the session with phonetic notes"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when session finished"
+        }
+      },
+      "required": ["id", "userId", "scenarioId", "score", "durationSeconds"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile with CEFR level, streak, XP, and completed lessons"
+    },
+    "/users/{userId}/pronunciationLogs/{logId}": {
+      "schema": "PronunciationLog",
+      "description": "Logs of user pronunciation mistakes, IPA targets, and corrections"
+    },
+    "/users/{userId}/sessions/{sessionId}": {
+      "schema": "PracticeSession",
+      "description": "Audio call practice session summaries and metrics"
+    }
+  }
+}

@@ -1,0 +1,139 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null && request.auth.uid != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // User Profile Validation
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'displayName', 'level', 'xp', 'streak'])
+        && data.keys().hasOnly(['uid', 'email', 'displayName', 'photoURL', 'level', 'targetLanguage', 'nativeLanguage', 'xp', 'streak', 'lastActiveDate', 'completedLessonIds', 'reminderEnabled', 'reminderTime', 'dailyXpGoal', 'createdAt', 'updatedAt'])
+        && data.uid == request.auth.uid
+        && data.uid is string && data.uid.size() <= 128
+        && data.email is string && data.email.size() <= 256
+        && data.displayName is string && data.displayName.size() <= 100
+        && data.level in ['A1', 'A2', 'B1', 'B2', 'C1']
+        && data.xp is number && data.xp >= 0
+        && data.streak is number && data.streak >= 0
+        && (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 1024))
+        && (!('targetLanguage' in data) || (data.targetLanguage is string && data.targetLanguage.size() <= 20))
+        && (!('nativeLanguage' in data) || (data.nativeLanguage is string && data.nativeLanguage.size() <= 20))
+        && (!('lastActiveDate' in data) || (data.lastActiveDate is string && data.lastActiveDate.size() <= 15))
+        && (!('completedLessonIds' in data) || (data.completedLessonIds is list && data.completedLessonIds.size() <= 500))
+        && (!('reminderEnabled' in data) || data.reminderEnabled is bool)
+        && (!('reminderTime' in data) || (data.reminderTime is string && data.reminderTime.size() <= 10))
+        && (!('dailyXpGoal' in data) || (data.dailyXpGoal is number && data.dailyXpGoal >= 10 && data.dailyXpGoal <= 1000));
+    }
+
+    // Pronunciation Log Validation
+    function isValidPronunciationLog(data, userId) {
+      return data.keys().hasAll(['id', 'userId', 'word', 'phoneticTarget', 'feedback'])
+        && data.keys().hasOnly(['id', 'userId', 'word', 'phoneticTarget', 'phoneticActual', 'feedback', 'scenarioId', 'accuracy', 'occurrenceCount', 'createdAt'])
+        && data.userId == userId
+        && data.userId == request.auth.uid
+        && data.id is string && data.id.size() <= 128
+        && data.word is string && data.word.size() <= 100
+        && data.phoneticTarget is string && data.phoneticTarget.size() <= 100
+        && data.feedback is string && data.feedback.size() <= 500
+        && (!('phoneticActual' in data) || (data.phoneticActual is string && data.phoneticActual.size() <= 100))
+        && (!('scenarioId' in data) || (data.scenarioId is string && data.scenarioId.size() <= 100))
+        && (!('accuracy' in data) || (data.accuracy is number && data.accuracy >= 0 && data.accuracy <= 100))
+        && (!('occurrenceCount' in data) || (data.occurrenceCount is number && data.occurrenceCount >= 0));
+    }
+
+    // Practice Session Validation
+    function isValidPracticeSession(data, userId) {
+      return data.keys().hasAll(['id', 'userId', 'scenarioId', 'score', 'durationSeconds'])
+        && data.keys().hasOnly(['id', 'userId', 'scenarioId', 'scenarioTitle', 'durationSeconds', 'score', 'turnsCount', 'strengths', 'improvements', 'mispronouncedWords', 'transcript', 'createdAt'])
+        && data.userId == userId
+        && data.userId == request.auth.uid
+        && data.id is string && data.id.size() <= 128
+        && data.scenarioId is string && data.scenarioId.size() <= 100
+        && data.score is number && data.score >= 0 && data.score <= 100
+        && data.durationSeconds is number && data.durationSeconds >= 0
+        && (!('scenarioTitle' in data) || (data.scenarioTitle is string && data.scenarioTitle.size() <= 150))
+        && (!('turnsCount' in data) || (data.turnsCount is number && data.turnsCount >= 0))
+        && (!('strengths' in data) || (data.strengths is list && data.strengths.size() <= 20))
+        && (!('improvements' in data) || (data.improvements is list && data.improvements.size() <= 20))
+        && (!('mispronouncedWords' in data) || (data.mispronouncedWords is list && data.mispronouncedWords.size() <= 50))
+        && (!('transcript' in data) || (data.transcript is list && data.transcript.size() <= 100));
+    }
+
+    // Collection: Users
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      allow list: if false; // Users cannot be enumerated
+
+      allow create: if isOwner(userId)
+        && isValidId(userId)
+        && isValidUser(incoming());
+
+      allow update: if isOwner(userId)
+        && isValidId(userId)
+        && isValidUser(incoming())
+        && incoming().uid == existing().uid; // UID immutable
+
+      allow delete: if false; // Prevent accidental user deletion
+
+      // Subcollection: Pronunciation Logs
+      match /pronunciationLogs/{logId} {
+        allow get: if isOwner(userId) && isValidId(logId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId)
+          && isValidId(logId)
+          && isValidPronunciationLog(incoming(), userId);
+
+        allow update: if isOwner(userId)
+          && isValidId(logId)
+          && isValidPronunciationLog(incoming(), userId)
+          && incoming().id == existing().id
+          && incoming().userId == existing().userId;
+
+        allow delete: if isOwner(userId) && isValidId(logId);
+      }
+
+      // Subcollection: Practice Sessions
+      match /sessions/{sessionId} {
+        allow get: if isOwner(userId) && isValidId(sessionId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId)
+          && isValidId(sessionId)
+          && isValidPracticeSession(incoming(), userId);
+
+        allow update: if isOwner(userId)
+          && isValidId(sessionId)
+          && isValidPracticeSession(incoming(), userId)
+          && incoming().id == existing().id
+          && incoming().userId == existing().userId;
+
+        allow delete: if isOwner(userId) && isValidId(sessionId);
+      }
+    }
+  }
+}
