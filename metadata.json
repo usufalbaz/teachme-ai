@@ -1,0 +1,6 @@
+{
+  "name": "TeachMe - AI English Language Coach",
+  "description": "Real-time spoken English coach with live voice interaction, CEFR A1-C1 roadmap, phonetic feedback, and grammar lessons.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
