@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5"/>
+      <stop offset="50%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#4338ca" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Background rounded squircle with padding safe-zone for maskable -->
+  <rect width="512" height="512" rx="128" fill="#020617"/>
+  <circle cx="256" cy="256" r="210" fill="url(#bg)" filter="url(#shadow)"/>
+  
+  <!-- Outer Glow Ring -->
+  <circle cx="256" cy="256" r="190" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="4"/>
+
+  <!-- Soundwave + Microphone Motif -->
+  <!-- Wave Bars -->
+  <rect x="130" y="216" width="16" height="80" rx="8" fill="#ffffff" opacity="0.8"/>
+  <rect x="166" y="176" width="16" height="160" rx="8" fill="#ffffff" opacity="0.9"/>
+  <rect x="202" y="146" width="16" height="220" rx="8" fill="#ffffff"/>
+  
+  <!-- Central Mic Head -->
+  <rect x="238" y="116" width="36" height="180" rx="18" fill="#ffffff"/>
+  <rect x="246" y="140" width="20" height="70" rx="10" fill="#6366f1"/>
+  
+  <rect x="294" y="146" width="16" height="220" rx="8" fill="#ffffff"/>
+  <rect x="330" y="176" width="16" height="160" rx="8" fill="#ffffff" opacity="0.9"/>
+  <rect x="366" y="216" width="16" height="80" rx="8" fill="#ffffff" opacity="0.8"/>
+
+  <!-- Mic Stand Arc -->
+  <path d="M 216 230 A 40 40 0 0 0 296 230" fill="none" stroke="#ffffff" stroke-width="12" stroke-linecap="round"/>
+  <line x1="256" y1="270" x2="256" y2="340" stroke="#ffffff" stroke-width="12" stroke-linecap="round"/>
+  <line x1="220" y1="340" x2="292" y2="340" stroke="#ffffff" stroke-width="12" stroke-linecap="round"/>
+
+  <!-- Flame Accent (Streak) -->
+  <path d="M 256 360 C 240 376, 230 400, 244 416 C 250 422, 262 422, 268 416 C 282 400, 272 376, 256 360 Z" fill="#f59e0b"/>
+</svg>
