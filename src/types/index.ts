@@ -6,6 +6,8 @@ export interface UserProfile {
   displayName: string;
   photoURL?: string;
   level: CEFRLevel;
+  ieltsBand?: number; // 4.0 - 9.0
+  totalSpokenSeconds?: number;
   targetLanguage?: string;
   nativeLanguage?: string;
   xp: number;
@@ -17,6 +19,57 @@ export interface UserProfile {
   dailyXpGoal?: number; // e.g. 50, 100
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface IeltsQuestion {
+  id: string;
+  module: 'listening' | 'reading' | 'writing' | 'speaking';
+  title: string;
+  titleAr: string;
+  instructions: string;
+  instructionsAr: string;
+  audioPromptUrl?: string;
+  audioScriptText?: string;
+  readingPassage?: string;
+  promptText: string;
+  type: 'multiple_choice' | 'short_answer' | 'essay_input' | 'spoken_record';
+  options?: string[];
+  correctAnswer?: string;
+  sampleAnswer?: string;
+  rubricNotes?: string;
+}
+
+export interface IeltsTestResult {
+  id: string;
+  userId: string;
+  overallBand: number; // e.g. 6.5
+  cefrEquivalent: CEFRLevel;
+  listeningBand: number;
+  readingBand: number;
+  writingBand: number;
+  speakingBand: number;
+  feedbackSummary: string;
+  speakingFeedback?: {
+    fluencyScore: number;
+    pronunciationScore: number;
+    grammarScore: number;
+    vocabularyScore: number;
+    transcribedSpeech?: string;
+  };
+  createdAt: string;
+}
+
+export interface AchievementBadge {
+  id: string;
+  title: string;
+  titleAr: string;
+  desc: string;
+  descAr: string;
+  icon: string;
+  unlocked: boolean;
+  progress: number;
+  target: number;
+  unlockedAt?: string;
 }
 
 export interface QuizQuestion {

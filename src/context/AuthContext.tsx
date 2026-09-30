@@ -14,9 +14,10 @@ import {
   saveUserProfile, 
   updateUserXPAndStreak,
   savePracticeSession as fbSaveSession,
-  logPronunciationMistake as fbLogMistake
+  logPronunciationMistake as fbLogMistake,
+  saveIeltsAssessment as fbSaveIelts
 } from '../services/firebase';
-import { UserProfile, CEFRLevel, PracticeSession, PronunciationLog } from '../types';
+import { UserProfile, CEFRLevel, PracticeSession, PronunciationLog, IeltsTestResult } from '../types';
 
 interface AuthContextType {
   user: FirebaseUser | null;
@@ -31,6 +32,7 @@ interface AuthContextType {
   updateProfileLevel: (level: CEFRLevel) => Promise<void>;
   recordCompletedLesson: (lessonId: string, xpEarned: number) => Promise<void>;
   saveSessionStats: (session: PracticeSession) => Promise<void>;
+  recordIeltsTestResult: (result: IeltsTestResult) => Promise<void>;
   addPronunciationMistake: (mistake: Omit<PronunciationLog, 'id' | 'createdAt'>) => Promise<void>;
   updateReminderSettings: (settings: { reminderEnabled?: boolean; reminderTime?: string; dailyXpGoal?: number }) => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -227,6 +229,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const recordIeltsTestResult = async (result: IeltsTestResult) => {
+    if (user && profile) {
+      await fbSaveIelts(user.uid, result);
+      const updated: UserProfile = {
+        ...profile,
+        level: result.cefrEquivalent,
+        ieltsBand: result.overallBand,
+        xp: profile.xp + 100,
+        updatedAt: new Date().toISOString()
+      };
+      setProfile(updated);
+    } else if (profile) {
+      const updated: UserProfile = {
+        ...profile,
+        level: result.cefrEquivalent,
+        ieltsBand: result.overallBand,
+        xp: profile.xp + 100,
+      };
+      setProfile(updated);
+    }
+  };
+
   const addPronunciationMistake = async (mistake: Omit<PronunciationLog, 'id' | 'createdAt'>) => {
     if (user) {
       await fbLogMistake(user.uid, mistake);
@@ -273,6 +297,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateProfileLevel,
         recordCompletedLesson,
         saveSessionStats,
+        recordIeltsTestResult,
         addPronunciationMistake,
         updateReminderSettings,
         refreshProfile,

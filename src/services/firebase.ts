@@ -23,7 +23,7 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
-import { UserProfile, PronunciationLog, PracticeSession } from '../types';
+import { UserProfile, PronunciationLog, PracticeSession, IeltsTestResult } from '../types';
 
 export enum OperationType {
   CREATE = 'create',
@@ -149,6 +149,8 @@ export async function saveUserProfile(profile: UserProfile): Promise<void> {
     if (profile.reminderEnabled !== undefined) cleanProfile.reminderEnabled = profile.reminderEnabled;
     if (profile.reminderTime) cleanProfile.reminderTime = profile.reminderTime;
     if (profile.dailyXpGoal) cleanProfile.dailyXpGoal = profile.dailyXpGoal;
+    if (profile.ieltsBand !== undefined) cleanProfile.ieltsBand = profile.ieltsBand;
+    if (profile.totalSpokenSeconds !== undefined) cleanProfile.totalSpokenSeconds = profile.totalSpokenSeconds;
     if (!profile.createdAt) cleanProfile.createdAt = now;
 
     await setDoc(doc(db, 'users', profile.uid), cleanProfile, { merge: true });
@@ -272,6 +274,43 @@ export async function getUserPracticeSessions(userId: string): Promise<PracticeS
     const sessions: PracticeSession[] = [];
     snap.forEach((d) => sessions.push(d.data() as PracticeSession));
     return sessions;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+  }
+}
+
+// IELTS Assessment Persistence Helpers
+export async function saveIeltsAssessment(
+  userId: string, 
+  result: IeltsTestResult
+): Promise<void> {
+  const path = `users/${userId}/ieltsAssessments/${result.id}`;
+  try {
+    await setDoc(doc(db, 'users', userId, 'ieltsAssessments', result.id), result);
+    // Sync level and band with User profile
+    await updateUserXPAndStreak(userId, 100);
+    const existing = await getUserProfile(userId);
+    if (existing) {
+      await saveUserProfile({
+        ...existing,
+        level: result.cefrEquivalent,
+        ieltsBand: result.overallBand,
+        updatedAt: new Date().toISOString()
+      });
+    }
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
+  }
+}
+
+export async function getUserIeltsAssessments(userId: string): Promise<IeltsTestResult[]> {
+  const path = `users/${userId}/ieltsAssessments`;
+  try {
+    const q = query(collection(db, 'users', userId, 'ieltsAssessments'), limit(10));
+    const snap = await getDocs(q);
+    const results: IeltsTestResult[] = [];
+    snap.forEach((d) => results.push(d.data() as IeltsTestResult));
+    return results;
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, path);
   }

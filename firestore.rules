@@ -31,7 +31,7 @@ service cloud.firestore {
     // User Profile Validation
     function isValidUser(data) {
       return data.keys().hasAll(['uid', 'email', 'displayName', 'level', 'xp', 'streak'])
-        && data.keys().hasOnly(['uid', 'email', 'displayName', 'photoURL', 'level', 'targetLanguage', 'nativeLanguage', 'xp', 'streak', 'lastActiveDate', 'completedLessonIds', 'reminderEnabled', 'reminderTime', 'dailyXpGoal', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'email', 'displayName', 'photoURL', 'level', 'ieltsBand', 'totalSpokenSeconds', 'targetLanguage', 'nativeLanguage', 'xp', 'streak', 'lastActiveDate', 'completedLessonIds', 'reminderEnabled', 'reminderTime', 'dailyXpGoal', 'createdAt', 'updatedAt'])
         && data.uid == request.auth.uid
         && data.uid is string && data.uid.size() <= 128
         && data.email is string && data.email.size() <= 256
@@ -40,6 +40,8 @@ service cloud.firestore {
         && data.xp is number && data.xp >= 0
         && data.streak is number && data.streak >= 0
         && (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 1024))
+        && (!('ieltsBand' in data) || (data.ieltsBand is number && data.ieltsBand >= 1 && data.ieltsBand <= 9))
+        && (!('totalSpokenSeconds' in data) || (data.totalSpokenSeconds is number && data.totalSpokenSeconds >= 0))
         && (!('targetLanguage' in data) || (data.targetLanguage is string && data.targetLanguage.size() <= 20))
         && (!('nativeLanguage' in data) || (data.nativeLanguage is string && data.nativeLanguage.size() <= 20))
         && (!('lastActiveDate' in data) || (data.lastActiveDate is string && data.lastActiveDate.size() <= 15))
@@ -133,6 +135,13 @@ service cloud.firestore {
           && incoming().userId == existing().userId;
 
         allow delete: if isOwner(userId) && isValidId(sessionId);
+      }
+
+      // Subcollection: IELTS Standard Assessments
+      match /ieltsAssessments/{assessmentId} {
+        allow get, list: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidId(assessmentId);
+        allow delete: if isOwner(userId) && isValidId(assessmentId);
       }
     }
   }
