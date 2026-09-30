@@ -327,65 +327,67 @@ export const AnalyticsView: React.FC<{ onStartVoicePractice: () => void }> = ({ 
       {/* Title */}
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 font-bold border border-indigo-500/30">
-            Firestore Synced
+          <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 font-semibold border border-blue-500/20">
+            Firestore Database Active
           </span>
-          <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">
-            🇪🇬 دعم اللهجة المصرية
+          <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20">
+            Acoustic Telemetry Synced
           </span>
         </div>
         <h1 className="text-2xl sm:text-3xl font-black text-white">
-          {t('analytics')}
+          {language === 'ar' ? 'سجل التقييمات والأداء الصوتي' : 'Evaluation Logs & Acoustic Analytics'}
         </h1>
         <p className="text-xs sm:text-sm text-slate-400 mt-1">
-          Detailed metrics on your conversational fluency, CEFR mastery, and in-depth reviews of your last 3 voice sessions with Egyptian coaching notes.
+          {language === 'ar' 
+            ? 'سجل مفصل لكل مكالمة صوتية أجريتها مع تحليل مخارج الحروف، ونقاط القوة والضعف، وتقييم الآيلتس'
+            : 'Detailed evaluation logs for each voice session, phoneme articulation tracking, and IELTS progress.'}
         </p>
       </div>
 
       {/* CEFR Fluency Radar / Skill Bars */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-5 rounded-3xl liquid-card border border-white/[0.08] space-y-3">
+        <div className="p-5 rounded-3xl bg-slate-900/40 border border-slate-800 space-y-3">
           <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
             <span>{t('fluencyScore')}</span>
-            <span className="text-indigo-400 font-bold">88%</span>
+            <span className="text-blue-400 font-bold">88%</span>
           </div>
-          <div className="w-full h-2 bg-black/40 rounded-full overflow-hidden p-0.5 border border-white/[0.05]">
-            <div className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full" style={{ width: '88%' }} />
+          <div className="w-full h-2 bg-slate-950 rounded-full overflow-hidden p-0.5 border border-slate-800">
+            <div className="h-full bg-blue-500 rounded-full" style={{ width: '88%' }} />
           </div>
-          <p className="text-[11px] text-slate-400">Speaking pace and natural conversation rhythm</p>
+          <p className="text-[11px] text-slate-500">Speaking pace and natural conversation rhythm</p>
         </div>
 
-        <div className="p-5 rounded-3xl liquid-card border border-white/[0.08] space-y-3">
+        <div className="p-5 rounded-3xl bg-slate-900/40 border border-slate-800 space-y-3">
           <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
             <span>{t('pronunciationCoach')}</span>
             <span className="text-emerald-400 font-bold">82%</span>
           </div>
-          <div className="w-full h-2 bg-black/40 rounded-full overflow-hidden p-0.5 border border-white/[0.05]">
-            <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full" style={{ width: '82%' }} />
+          <div className="w-full h-2 bg-slate-950 rounded-full overflow-hidden p-0.5 border border-slate-800">
+            <div className="h-full bg-emerald-500 rounded-full" style={{ width: '82%' }} />
           </div>
-          <p className="text-[11px] text-slate-400">Phonemic clarity & IPA consonant accuracy</p>
+          <p className="text-[11px] text-slate-500">Phonemic clarity & IPA consonant accuracy</p>
         </div>
 
-        <div className="p-5 rounded-3xl liquid-card border border-white/[0.08] space-y-3">
+        <div className="p-5 rounded-3xl bg-slate-900/40 border border-slate-800 space-y-3">
           <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
             <span>{t('grammarAccuracy')}</span>
             <span className="text-sky-400 font-bold">85%</span>
           </div>
-          <div className="w-full h-2 bg-black/40 rounded-full overflow-hidden p-0.5 border border-white/[0.05]">
-            <div className="h-full bg-gradient-to-r from-sky-500 to-indigo-400 rounded-full" style={{ width: '85%' }} />
+          <div className="w-full h-2 bg-slate-950 rounded-full overflow-hidden p-0.5 border border-slate-800">
+            <div className="h-full bg-sky-500 rounded-full" style={{ width: '85%' }} />
           </div>
-          <p className="text-[11px] text-slate-400">Tense agreements, prepositions, & syntax</p>
+          <p className="text-[11px] text-slate-500">Tense agreements, prepositions, & syntax</p>
         </div>
 
-        <div className="p-5 rounded-3xl liquid-card border border-white/[0.08] space-y-3">
+        <div className="p-5 rounded-3xl bg-slate-900/40 border border-slate-800 space-y-3">
           <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
             <span>{t('vocabularyBreadth')}</span>
             <span className="text-purple-400 font-bold">78%</span>
           </div>
-          <div className="w-full h-2 bg-black/40 rounded-full overflow-hidden p-0.5 border border-white/[0.05]">
-            <div className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full" style={{ width: '78%' }} />
+          <div className="w-full h-2 bg-slate-950 rounded-full overflow-hidden p-0.5 border border-slate-800">
+            <div className="h-full bg-purple-500 rounded-full" style={{ width: '78%' }} />
           </div>
-          <p className="text-[11px] text-slate-400">CEFR lexical variety & idiomatic expressions</p>
+          <p className="text-[11px] text-slate-500">CEFR lexical variety & idiomatic expressions</p>
         </div>
       </div>
 
