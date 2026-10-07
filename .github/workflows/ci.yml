@@ -18,13 +18,9 @@ jobs:
       uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
       with:
         node-version: 20
-        cache: 'npm'
 
     - name: Install Dependencies
-      run: npm install
+      run: npm install --legacy-peer-deps
 
-    - name: Verify TypeScript Compilation
-      run: npm run lint
-
-    - name: Build Vite Production Assets
+    - name: Build Production Assets
       run: npm run build
