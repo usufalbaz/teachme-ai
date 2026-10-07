@@ -1,120 +1,84 @@
 # TeachMe AI 🎙️🇪🇬
-### Real-Time AI Spoken English Coach & Phonetics Trainer
+### Real-Time AI Spoken English Coach & Egyptian Phonetics Trainer
 
-**TeachMe AI** is an advanced, real-time spoken English training platform engineered for non-native learners (CEFR Levels A1 to C1). Inspired by industry-leading applications like **ELSA Speak**, **Praktika AI**, and **Pingo AI**, TeachMe AI combines ultra-low latency conversational audio streaming with phoneme-level pronunciation diagnosis and native **Egyptian Arabic (العامية المصرية)** comprehension and coaching.
+[![CI Pipeline](https://github.com/usufalbaz/teachme-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/usufalbaz/teachme-ai/actions)
+[![React 19](https://img.shields.io/badge/React-19-61DAFB.svg)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6.svg)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-8.x-646CFF.svg)](https://vitejs.dev/)
+[![Gemini Live](https://img.shields.io/badge/Gemini-Live_Audio_API-8E75C2.svg)](https://ai.google.dev/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+TeachMe AI is an advanced, real-time spoken English training platform engineered for Arabic and non-native learners. Powered by Google Gemini Live bidirectional WebSocket audio streaming, TeachMe AI delivers sub-second conversational speech latency, phoneme-level color articulation feedback, and native Egyptian Arabic tutoring and code-switching.
 
 ---
 
-## 🌟 Key Features
+## 🏗️ System & Audio Architecture
 
-### 1. ⚡ Real-Time Spoken Conversation (Gemini Live WebSockets)
-- Zero-lag bidirectional voice streaming over WebSockets.
-- Natural interruption handling: interrupt the coach mid-sentence and it immediately yields the floor.
-- Expressive, pedagogical AI personas tailored for diverse scenarios (Airport Customs, Job Interviews, Coffee Ordering, Tech Standups).
+    +--------------------------+       WebSocket (PCM 16kHz)       +--------------------------+
+    |   Client Browser (PWA)   | ================================> | Node.js Express Gateway  |
+    |  - Web Audio API Capture |                                   | - Audio Resampling Proxy |
+    |  - 24kHz Stream Player   | <================================ | - WebSocket Session Hub  |
+    +--------------------------+       Audio Stream (PCM 24kHz)    +-------------+------------+
+                                                                                 |
+                                                                   Bi-directional Stream
+                                                                                 |
+                                                                   +-------------v------------+
+                                                                   |  Google Gemini Live API  |
+                                                                   |  (gemini-3.8-live model) |
+                                                                   +--------------------------+
 
-### 2. 🇪🇬 Native Egyptian Arabic Tutoring & Code-Switching
-- Full comprehension of Egyptian Arabic dialects and Arabized English.
-- If learners hesitate or ask questions in Egyptian Arabic (*"يعني إيه ديه؟"*, *"مش عارف أنطقها ازاي"*), TeachMe AI explains warmly in friendly Egyptian Arabic, gives the English equivalent, and guides them to speak in English.
-- Targeted articulatory tips for common Egyptian phonetic traps:
-  - **/p/ vs /b/** bilabial air-burst guidance.
-  - **/θ/ and /ð/** dental placement (*طرف اللسان بين الأسنان*).
-  - Silent letters (*receipt*, *Wednesday*, *doubt*).
+---
 
-### 3. 🎯 ELSA-Style Phoneme-Level Color Analyzer
-- Visual word breakdown into individual phonemes:
-  - 🟢 **Green**: Accurate phoneme (100%).
-  - 🟡 **Yellow**: Minor vowel duration / stress drift.
-  - 🔴 **Red**: Common articulation error.
-- Comprehensive **Mouth & Tongue Articulatory Guide** displaying lip shapes, tongue positioning, and vocal cord vibration status.
+## 🌟 Key Capabilities
 
-### 4. 🔁 Repeat & Master (Micro-Drills)
-- Instant drill mode for flagged words with slowed audio playback (0.7x and 1.0x).
-- Spoken voice recognition comparing student attempts against target IPA sounds.
-- Instant scoring and gamified **+15 XP** rewards with confetti feedback.
+1. Bidirectional Voice Streaming (Gemini Live WebSockets):
+   * Low-latency bidirectional audio capture at 16kHz and playback at 24kHz via Web Audio API.
+   * Natural interruption handling (barge-in): speaking immediately halts model audio playback.
+   * 5 pedagogical AI personas tailored for diverse conversational contexts.
 
-### 5. 📊 Session Transcript Review & Firestore Persistence
-- Full conversation logging stored in **Google Cloud Firestore**.
-- In-depth review in the **Analytics Tab** for the last 3 voice sessions, complete with speaker dialogue bubbles, IPA targets, and audio listen buttons for each turn.
+2. Native Egyptian Arabic Tutoring & Phonetic Code-Switching:
+   * Bilingual speech understanding accommodating Egyptian Arabic dialects and Arabized English.
+   * Targeted articulatory remediation for common Middle Eastern phonetic traps (/p/ vs /b/, dental /θ/ vs /s/, silent letters).
 
-### 6. 📱 Android & PWA Ready
-- Certified **Progressive Web App (PWA)** installable directly on Android and desktop devices.
-- Ready for native **Android .APK / .AAB** export via Capacitor.
+3. Phoneme-Level Visual Articulation Analyzer:
+   * Color-coded phonetic breakdown identifying specific articulation errors.
+   * Visual tongue and lip movement diagrams based on International Phonetic Alphabet (IPA) standards.
+
+4. Session Analytics & Cloud Persistence:
+   * Dialogue transcript logging and fluency metrics stored securely in Google Cloud Firestore.
+   * Historical session reviews and targeted vocabulary micro-drills.
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React 19, TypeScript, Tailwind CSS, Lucide Icons, Canvas Confetti.
-- **Audio Processing**: Web Audio API (16kHz PCM capture, 24kHz Web Audio player), Web Speech Recognition.
-- **AI Engine**: Google Gemini API (`gemini-3.8-flash`, `gemini-3.8-live` via WebSocket proxy).
-- **Backend**: Node.js, Express, `ws` (WebSocket server), `@google/genai` TypeScript SDK.
-- **Database & Auth**: Firebase Firestore & Firebase Authentication.
-- **Build Tool**: Vite.
+* Frontend: React 19, TypeScript, Tailwind CSS, Lucide Icons, Canvas Confetti
+* Audio Core: Web Audio API, Web Speech API
+* Backend Proxy: Node.js, Express, ws (WebSocket Server), @google/genai SDK
+* Storage & Auth: Google Cloud Firestore, Firebase Authentication
+* Tooling: Vite, TypeScript, GitHub Actions CI
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Local Installation & Setup
 
-### Prerequisites
-- Node.js 18+ installed
-- A Google Gemini API Key
+1. Clone the repository:
+    git clone https://github.com/usufalbaz/teachme-ai.git
+    cd teachme-ai
 
-### Installation
+2. Install dependencies:
+    npm install
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/teachme-ai.git
-   cd teachme-ai
-   ```
+3. Configure environment variables:
+   Create a .env file in the root directory:
+    GEMINI_API_KEY=your_gemini_api_key_here
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+4. Run the development server:
+    npm run dev
 
-3. **Configure Environment Variables:**
-   Create a `.env` file in the root directory:
-   ```env
-   GEMINI_API_KEY=your_gemini_api_key_here
-   ```
-
-4. **Run the Development Server:**
-   ```bash
-   npm run dev
-   ```
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
-
----
-
-## 📱 Exporting to Native Android APK
-
-To build a standalone `.apk` or `.aab` package for Google Play:
-
-```bash
-# 1. Install Capacitor
-npm install @capacitor/core @capacitor/cli @capacitor/android
-
-# 2. Initialize Capacitor
-npx cap init TeachMe com.teachme.ai --web-dir dist
-
-# 3. Build Web Assets
-npm run build
-
-# 4. Add Android Project
-npx cap add android
-
-# 5. Open in Android Studio & Generate APK
-npx cap open android
-```
-
----
-
-## 👨‍💻 Engineering & Architecture
-
-- **Lead Architect & Systems Engineer**: **Eng. Yousuf Albaz** (AI & Systems Engineer)
-- **Repository**: [github.com/usufalbaz/teachme-ai](https://github.com/usufalbaz/teachme-ai)
+   Open http://localhost:3000 in your browser.
 
 ---
 
 ## 📄 License
-MIT License. Developed & Engineered by Eng. Yousuf Albaz. All rights reserved.
+Distributed under the MIT License. See LICENSE for details.
