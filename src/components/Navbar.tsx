@@ -1,20 +1,8 @@
-import React, { useState } from 'react';
-import { 
-  Globe, 
-  LogIn, 
-  LogOut, 
-  ChevronDown, 
-  Mic, 
-  Award, 
-  FileText, 
-  ShieldCheck,
-  Activity,
-  Compass
-} from 'lucide-react';
+import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 
-interface NavbarProps {
+export interface NavbarProps {
   currentTab: 'studio' | 'roadmap' | 'ielts' | 'analytics' | 'achievements';
   onSelectTab: (tab: 'studio' | 'roadmap' | 'ielts' | 'analytics' | 'achievements') => void;
   onOpenAuth: () => void;
@@ -25,274 +13,159 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSelectTab,
   onOpenAuth,
 }) => {
-  const { user, profile, logout } = useAuth();
+  const { user, profile } = useAuth();
   const { language, toggleLanguage, t } = useLanguage();
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
-  const level = profile?.level || 'B1';
-  const ieltsBand = profile?.ieltsBand || (level === 'C1' ? 8.0 : level === 'B2' ? 7.0 : level === 'B1' ? 6.0 : level === 'A2' ? 5.0 : 4.0);
+  const navItems = [
+    { id: 'studio', labelAr: 'الاستوديو الصوتي', labelEn: 'Voice Studio', icon: '🎙️' },
+    { id: 'roadmap', labelAr: 'خريطة التعلم', labelEn: 'Roadmap', icon: '🗺️' },
+    { id: 'ielts', labelAr: 'اختبار IELTS', labelEn: 'IELTS Exam', icon: '🎓' },
+    { id: 'analytics', labelAr: 'سجل التقييمات', labelEn: 'Analytics', icon: '📊' },
+    { id: 'achievements', labelAr: 'الإنجازات والشهادات', labelEn: 'Portfolio', icon: '🏆' },
+  ] as const;
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-800/80 bg-[#080d1a]/85 backdrop-blur-2xl">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 sm:h-20 gap-3">
+    <>
+      {/* ========================================================= */}
+      {/* 1. Desktop & Tablet Top Navigation Bar                   */}
+      {/* ========================================================= */}
+      <header className="sticky top-0 z-40 w-full bg-[#070b14]/90 backdrop-blur-md border-b border-slate-800/80 transition-all">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           
-          {/* Professional Typographic Logo: teachme-ai */}
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => onSelectTab('studio')}
-              className="flex items-center gap-2.5 group text-left transition"
-            >
-              <div className="w-9 h-9 rounded-xl bg-blue-600/15 border border-blue-500/30 flex items-center justify-center text-blue-400 shadow-sm group-hover:scale-105 transition-transform">
-                <Activity className="w-5 h-5 text-blue-400 stroke-[2.2]" />
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-extrabold text-lg sm:text-xl tracking-tight text-white font-sans">
-                    teachme<span className="text-blue-400 font-black">.ai</span>
-                  </span>
-                  <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-bold border border-slate-700/60">
-                    Live
-                  </span>
-                </div>
-                <span className="text-[10px] text-slate-400 hidden sm:block font-medium tracking-wide">
-                  Acoustic Spoken Studio & IELTS Benchmark
+          {/* Brand Logo & Model Tag */}
+          <div 
+            onClick={() => onSelectTab('studio')}
+            className="flex items-center gap-3 cursor-pointer select-none group"
+          >
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-600 to-indigo-800 p-0.5 shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform flex items-center justify-center">
+              <span className="text-xl">⚡</span>
+            </div>
+            
+            <div className="flex flex-col">
+              <div className="flex items-center gap-1.5">
+                <span className="font-black text-lg tracking-tight text-white group-hover:text-blue-400 transition-colors">
+                  teachme<span className="text-blue-500">.ai</span>
+                </span>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                  Gemini Live
                 </span>
               </div>
-            </button>
+              <span className="text-[10px] text-slate-400 font-medium hidden sm:inline">
+                {language === 'ar' ? 'تعلم التحدث بالذكاء الاصطناعي' : 'Acoustic Conversational English'}
+              </span>
+            </div>
           </div>
 
-          {/* Minimalist Studio Navigation Tabs */}
-          <nav className="hidden md:flex items-center gap-1 p-1 bg-slate-900/80 rounded-2xl border border-slate-800 shadow-sm">
-            <button
-              onClick={() => onSelectTab('studio')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
-                currentTab === 'studio'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-              }`}
-            >
-              <Mic className="w-3.5 h-3.5" />
-              <span>{language === 'ar' ? 'استوديو التحدث' : 'Spoken Studio'}</span>
-            </button>
-
-            {/* Curriculum Roadmap Tab */}
-            <button
-              onClick={() => onSelectTab('roadmap')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
-                currentTab === 'roadmap'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-              }`}
-            >
-              <Compass className="w-3.5 h-3.5" />
-              <span>{language === 'ar' ? 'خريطة التعلم' : 'Roadmap'}</span>
-            </button>
-
-            <button
-              onClick={() => onSelectTab('ielts')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
-                currentTab === 'ielts'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-              }`}
-            >
-              <Award className="w-3.5 h-3.5" />
-              <span>{language === 'ar' ? 'تحديد المستوى (IELTS)' : 'IELTS Assessment'}</span>
-            </button>
-
-            <button
-              onClick={() => onSelectTab('analytics')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
-                currentTab === 'analytics'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-              }`}
-            >
-              <FileText className="w-3.5 h-3.5" />
-              <span>{language === 'ar' ? 'سجل التقييمات' : 'Evaluation Logs'}</span>
-            </button>
-
-            <button
-              onClick={() => onSelectTab('achievements')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
-                currentTab === 'achievements'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-              }`}
-            >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>{language === 'ar' ? 'الإنجازات' : 'Achievements'}</span>
-            </button>
+          {/* Desktop Navigation Tabs */}
+          <nav className="hidden md:flex items-center gap-1 bg-slate-900/70 p-1.5 rounded-2xl border border-slate-800/80">
+            {navItems.map((item) => {
+              const isActive = currentTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => onSelectTab(item.id)}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                    isActive
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                  }`}
+                >
+                  <span className="text-sm">{item.icon}</span>
+                  <span>{language === 'ar' ? item.labelAr : item.labelEn}</span>
+                </button>
+              );
+            })}
           </nav>
 
-          {/* Right Controls: Band & Auth & Language */}
-          <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* Right Action Bar (Streak, Language Toggle, User Auth) */}
+          <div className="flex items-center gap-2.5">
             
-            {/* IELTS Band Indicator Badge */}
+            {/* Daily Streak Counter Badge */}
             <div 
-              onClick={() => onSelectTab('ielts')}
-              className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-300 font-bold text-xs hover:border-blue-400/40 transition"
-              title="Click to view or retake official IELTS diagnostic"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 select-none"
+              title={language === 'ar' ? 'أيام التدريب المتتالية' : 'Daily Practice Streak'}
             >
-              <span className="text-[10px] text-slate-400 font-medium">IELTS</span>
-              <span>Band {ieltsBand.toFixed(1)}</span>
+              <span className="text-sm animate-pulse">🔥</span>
+              <span className="text-xs font-black">{profile?.streakCount ?? 1}</span>
+              <span className="text-[10px] font-bold text-amber-500/80 hidden sm:inline">
+                {language === 'ar' ? 'يوم' : 'days'}
+              </span>
             </div>
 
             {/* Language Switcher */}
             <button
               onClick={toggleLanguage}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white text-xs font-semibold transition"
-              title={language === 'en' ? 'التحويل للعربية' : 'Switch to English'}
+              className="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-bold text-slate-300 transition"
+              title="تغيير لغة الواجهة"
             >
-              <Globe className="w-3.5 h-3.5 text-blue-400" />
-              <span>{language === 'en' ? 'عربي' : 'EN'}</span>
+              {language === 'ar' ? 'EN' : 'عربي'}
             </button>
 
-            {/* Profile / Auth Menu */}
+            {/* User Profile or Login Trigger */}
             {user ? (
-              <div className="relative">
-                <button
-                  onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-                  className="flex items-center gap-2 p-1 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 transition"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-blue-600/30 text-blue-300 border border-blue-500/30 flex items-center justify-center font-bold text-xs uppercase overflow-hidden">
-                    {profile?.photoURL ? (
-                      <img src={profile.photoURL} alt="Avatar" className="w-full h-full object-cover" />
-                    ) : (
-                      profile?.displayName?.charAt(0) || user.email?.charAt(0) || 'U'
-                    )}
-                  </div>
-                  <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden sm:block mr-1" />
-                </button>
-
-                {profileMenuOpen && (
-                  <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-3 w-64 rounded-2xl bg-[#0e1424] border border-slate-800 shadow-2xl py-2.5 z-50 text-xs">
-                    <div className="px-4 py-2 border-b border-slate-800">
-                      <p className="font-bold text-white truncate">{profile?.displayName || 'Learner'}</p>
-                      <p className="text-[11px] text-slate-400 truncate">{user.email}</p>
-                    </div>
-
-                    <div className="px-4 py-2 border-b border-slate-800 text-[11px] text-slate-400">
-                      <div className="flex items-center justify-between">
-                        <span>Current Band:</span>
-                        <strong className="text-blue-400">Band {ieltsBand.toFixed(1)} ({level})</strong>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => {
-                        setProfileMenuOpen(false);
-                        onSelectTab('roadmap');
-                      }}
-                      className="w-full text-left rtl:text-right px-4 py-2 text-slate-300 hover:bg-slate-800 hover:text-white transition flex items-center gap-2"
-                    >
-                      <Compass className="w-4 h-4 text-blue-400" />
-                      <span>{language === 'ar' ? 'خريطة التعلم التفاعلية' : 'Interactive Roadmap'}</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setProfileMenuOpen(false);
-                        onSelectTab('ielts');
-                      }}
-                      className="w-full text-left rtl:text-right px-4 py-2 text-slate-300 hover:bg-slate-800 hover:text-white transition flex items-center gap-2"
-                    >
-                      <Award className="w-4 h-4 text-blue-400" />
-                      <span>{language === 'ar' ? 'اختبار الآيلتس لتحديد المستوى' : 'IELTS Diagnostic Exam'}</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setProfileMenuOpen(false);
-                        onSelectTab('achievements');
-                      }}
-                      className="w-full text-left rtl:text-right px-4 py-2 text-slate-300 hover:bg-slate-800 hover:text-white transition flex items-center gap-2"
-                    >
-                      <ShieldCheck className="w-4 h-4 text-blue-400" />
-                      <span>{language === 'ar' ? 'سجل الشهادات والإنجازات' : 'My Certificates'}</span>
-                    </button>
-
-                    <div className="my-1 border-t border-slate-800" />
-
-                    <button
-                      onClick={() => {
-                        setProfileMenuOpen(false);
-                        logout();
-                      }}
-                      className="w-full text-left rtl:text-right px-4 py-2 text-rose-400 hover:bg-rose-500/10 transition flex items-center gap-2"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      <span>{t('signOut')}</span>
-                    </button>
-                  </div>
-                )}
+              <div 
+                onClick={onOpenAuth}
+                className="flex items-center gap-2 pl-2 pr-1 py-1 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 cursor-pointer transition select-none"
+              >
+                <div className="flex flex-col text-right hidden sm:flex">
+                  <span className="text-xs font-bold text-white leading-tight truncate max-w-[100px]">
+                    {profile?.displayName || user.email?.split('@')[0] || 'User'}
+                  </span>
+                  <span className="text-[10px] font-extrabold text-blue-400">
+                    {profile?.targetLevel || 'B1'}
+                  </span>
+                </div>
+                <div className="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-sm font-bold text-blue-300">
+                  {user.photoURL ? (
+                    <img src={user.photoURL} alt="Avatar" className="w-full h-full rounded-lg object-cover" />
+                  ) : (
+                    (profile?.displayName || user.email || 'U')[0].toUpperCase()
+                  )}
+                </div>
               </div>
             ) : (
               <button
                 onClick={onOpenAuth}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md transition hover:scale-105"
+                className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-extrabold shadow-lg shadow-blue-600/25 transition active:scale-95"
               >
-                <LogIn className="w-3.5 h-3.5" />
-                <span>{language === 'ar' ? 'تسجيل الدخول' : 'Sign In'}</span>
+                {language === 'ar' ? 'تسجيل الدخول' : 'Sign In'}
               </button>
             )}
+
           </div>
+
         </div>
+      </header>
 
-        {/* Mobile Navigation Row (Preserved & Enhanced with Roadmap) */}
-        <div className="flex md:hidden items-center justify-around py-2 border-t border-slate-800 text-[11px]">
-          <button
-            onClick={() => onSelectTab('studio')}
-            className={`flex items-center gap-1.5 py-1.5 px-2 rounded-xl font-medium transition ${
-              currentTab === 'studio' ? 'bg-blue-600 text-white font-bold' : 'text-slate-400'
-            }`}
-          >
-            <Mic className="w-3.5 h-3.5" />
-            <span>{language === 'ar' ? 'التحدث' : 'Studio'}</span>
-          </button>
-
-          <button
-            onClick={() => onSelectTab('roadmap')}
-            className={`flex items-center gap-1.5 py-1.5 px-2 rounded-xl font-medium transition ${
-              currentTab === 'roadmap' ? 'bg-blue-600 text-white font-bold' : 'text-slate-400'
-            }`}
-          >
-            <Compass className="w-3.5 h-3.5" />
-            <span>{language === 'ar' ? 'الخريطة' : 'Map'}</span>
-          </button>
-
-          <button
-            onClick={() => onSelectTab('ielts')}
-            className={`flex items-center gap-1.5 py-1.5 px-2 rounded-xl font-medium transition ${
-              currentTab === 'ielts' ? 'bg-blue-600 text-white font-bold' : 'text-slate-400'
-            }`}
-          >
-            <Award className="w-3.5 h-3.5" />
-            <span>{language === 'ar' ? 'الآيلتس' : 'IELTS'}</span>
-          </button>
-
-          <button
-            onClick={() => onSelectTab('analytics')}
-            className={`flex items-center gap-1.5 py-1.5 px-2 rounded-xl font-medium transition ${
-              currentTab === 'analytics' ? 'bg-blue-600 text-white font-bold' : 'text-slate-400'
-            }`}
-          >
-            <FileText className="w-3.5 h-3.5" />
-            <span>{language === 'ar' ? 'التقييم' : 'Logs'}</span>
-          </button>
-
-          <button
-            onClick={() => onSelectTab('achievements')}
-            className={`flex items-center gap-1.5 py-1.5 px-2 rounded-xl font-medium transition ${
-              currentTab === 'achievements' ? 'bg-blue-600 text-white font-bold' : 'text-slate-400'
-            }`}
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>{language === 'ar' ? 'الأوسمة' : 'Badges'}</span>
-          </button>
-        </div>
-      </div>
-    </header>
+      {/* ========================================================= */}
+      {/* 2. Mobile Native Bottom Navigation Dock (PWA / Android UX) */}
+      {/* ========================================================= */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#070b14]/95 backdrop-blur-xl border-t border-slate-800/80 px-2 py-2 flex items-center justify-around">
+        {navItems.map((item) => {
+          const isActive = currentTab === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => onSelectTab(item.id)}
+              className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all relative ${
+                isActive 
+                  ? 'text-blue-400 font-extrabold' 
+                  : 'text-slate-500 hover:text-slate-300 font-medium'
+              }`}
+            >
+              <span className={`text-xl transition-transform ${isActive ? 'scale-110 -translate-y-0.5' : ''}`}>
+                {item.icon}
+              </span>
+              <span className="text-[10px] mt-0.5 tracking-tight truncate max-w-[62px]">
+                {language === 'ar' ? item.labelAr : item.labelEn}
+              </span>
+              {isActive && (
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 absolute -bottom-1" />
+              )}
+            </button>
+          );
+        })}
+      </nav>
+    </>
   );
 };
