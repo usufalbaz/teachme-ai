@@ -2,28 +2,9 @@
   "name": "teachme-ai",
   "private": false,
   "version": "1.0.0",
-  "description": "Real-Time AI Spoken English Coach & Egyptian Phonetics Trainer powered by Gemini Multimodal Live WebSocket API",
-  "author": "Yousuf Albaz <u.albaz.official@gmail.com> (https://github.com/usufalbaz)",
+  "description": "Real-Time AI Spoken English Coach & Egyptian Phonetics Trainer",
+  "author": "Yousuf Albaz",
   "license": "MIT",
-  "homepage": "https://github.com/usufalbaz/teachme-ai#readme",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/usufalbaz/teachme-ai.git"
-  },
-  "bugs": {
-    "url": "https://github.com/usufalbaz/teachme-ai/issues"
-  },
-  "keywords": [
-    "gemini-live-api",
-    "speech-recognition",
-    "phonetics-coach",
-    "react19",
-    "typescript",
-    "audio-dsp",
-    "pcm-streaming",
-    "egyptian-arabic",
-    "websockets"
-  ],
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -32,7 +13,7 @@
     "server": "tsx server.ts"
   },
   "dependencies": {
-    "@google/genai": "^0.1.1",
+    "@google/genai": "latest",
     "clsx": "^2.1.1",
     "firebase": "^11.0.1",
     "lucide-react": "^0.460.0",
