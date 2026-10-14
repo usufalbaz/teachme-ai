@@ -1,44 +1,56 @@
 {
   "name": "teachme-ai",
-  "private": true,
+  "private": false,
   "version": "1.0.0",
-  "description": "Real-time AI spoken English coach with Gemini Live WebSocket audio streaming and Egyptian Arabic phonetics",
+  "description": "Real-Time AI Spoken English Coach & Egyptian Phonetics Trainer powered by Gemini Multimodal Live WebSocket API",
+  "author": "Yousuf Albaz <u.albaz.official@gmail.com> (https://github.com/usufalbaz)",
+  "license": "MIT",
+  "homepage": "https://github.com/usufalbaz/teachme-ai#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/usufalbaz/teachme-ai.git"
+  },
+  "bugs": {
+    "url": "https://github.com/usufalbaz/teachme-ai/issues"
+  },
+  "keywords": [
+    "gemini-live-api",
+    "speech-recognition",
+    "phonetics-coach",
+    "react19",
+    "typescript",
+    "audio-dsp",
+    "pcm-streaming",
+    "egyptian-arabic",
+    "websockets"
+  ],
   "type": "module",
   "scripts": {
-    "dev": "vite --port=3000 --host=0.0.0.0",
-    "build": "vite build",
-    "start": "tsx server.ts",
+    "dev": "vite",
+    "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "clean": "rm -rf dist server.js",
-    "lint": "tsc --noEmit"
+    "server": "tsx server.ts"
   },
   "dependencies": {
-    "@google/genai": "^2.4.0",
-    "@tailwindcss/vite": "^4.3.3",
-    "@vitejs/plugin-react": "^6.1.1",
-    "canvas-confetti": "^1.9.4",
-    "dotenv": "^17.2.3",
-    "express": "^4.21.2",
-    "firebase": "^12.19.0",
-    "lucide-react": "^0.546.0",
-    "motion": "^12.23.24",
-    "react": "^19.0.1",
-    "react-dom": "^19.0.1",
-    "vite": "^8.3.0",
-    "ws": "^8.22.0"
+    "@google/genai": "^0.1.1",
+    "clsx": "^2.1.1",
+    "firebase": "^11.0.1",
+    "lucide-react": "^0.460.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwind-merge": "^2.5.4",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
-    "@types/canvas-confetti": "^1.9.0",
-    "@types/express": "^4.17.21",
-    "@types/node": "^22.14.0",
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0",
-    "@types/ws": "^8.18.2",
-    "autoprefixer": "^10.4.21",
-    "esbuild": "^0.25.0",
-    "tailwindcss": "^4.3.3",
-    "tsx": "^4.21.0",
-    "typescript": "^7.0.2",
-    "vite-plugin-pwa": "^1.3.0"
+    "@tailwindcss/vite": "^4.0.0-beta.4",
+    "@types/node": "^22.9.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/ws": "^8.5.13",
+    "@vitejs/plugin-react": "^4.3.3",
+    "tailwindcss": "^4.0.0-beta.4",
+    "tsx": "^4.19.2",
+    "typescript": "~5.6.3",
+    "vite": "^6.0.0"
   }
 }
