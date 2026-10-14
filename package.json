@@ -2,9 +2,6 @@
   "name": "teachme-ai",
   "private": false,
   "version": "1.0.0",
-  "description": "Real-Time AI Spoken English Coach & Egyptian Phonetics Trainer",
-  "author": "Yousuf Albaz",
-  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -13,8 +10,14 @@
     "server": "tsx server.ts"
   },
   "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
     "@google/genai": "latest",
+    "canvas-confetti": "^1.9.2",
     "clsx": "^2.1.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
     "firebase": "^11.0.1",
     "lucide-react": "^0.460.0",
     "react": "^19.0.0",
@@ -24,6 +27,8 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.0-beta.4",
+    "@types/canvas-confetti": "^1.6.4",
+    "@types/express": "^4.17.21",
     "@types/node": "^22.9.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
