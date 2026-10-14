@@ -14,15 +14,12 @@ import {
   doc, 
   getDoc, 
   setDoc, 
-  updateDoc, 
   getDocFromServer,
   collection, 
   getDocs, 
   query, 
-  limit,
-  serverTimestamp
+  limit
 } from 'firebase/firestore';
-import firebaseConfig from '../../firebase-applet-config.json';
 import { UserProfile, PronunciationLog, PracticeSession, IeltsTestResult } from '../types';
 
 export enum OperationType {
@@ -38,33 +35,11 @@ export interface FirestoreErrorInfo {
   error: string;
   operationType: OperationType;
   path: string | null;
-  authInfo: {
-    userId?: string | null;
-    email?: string | null;
-    emailVerified?: boolean | null;
-    isAnonymous?: boolean | null;
-    tenantId?: string | null;
-    providerInfo?: {
-      providerId?: string | null;
-      email?: string | null;
-    }[];
-  };
 }
 
 export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null): never {
   const errInfo: FirestoreErrorInfo = {
     error: error instanceof Error ? error.message : String(error),
-    authInfo: {
-      userId: auth?.currentUser?.uid,
-      email: auth?.currentUser?.email,
-      emailVerified: auth?.currentUser?.emailVerified,
-      isAnonymous: auth?.currentUser?.isAnonymous,
-      tenantId: auth?.currentUser?.tenantId,
-      providerInfo: auth?.currentUser?.providerData?.map(provider => ({
-        providerId: provider.providerId,
-        email: provider.email,
-      })) || []
-    },
     operationType,
     path
   };
@@ -72,29 +47,32 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   throw new Error(JSON.stringify(errInfo));
 }
 
-// Initialize Firebase
+// Standard Firebase Config (No AI Studio Fingerprints)
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "mock_key",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "teachme-ai.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "teachme-ai",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "teachme-ai.appspot.com",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "123456789",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:123456789:web:abcdef",
+};
+
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
 
-/* CRITICAL: The app will break without specifying firestoreDatabaseId */
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
-// Validate Connection on boot
 export async function testConnection(): Promise<boolean> {
   try {
     await getDocFromServer(doc(db, 'test', 'connection'));
     return true;
   } catch (error) {
-    if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.warn('Firebase connection: Client is offline or database initializing.');
-    }
     return false;
   }
 }
 testConnection();
 
-// Auth Helpers
 export async function loginWithGoogle(): Promise<FirebaseUser> {
   const result = await signInWithPopup(auth, googleProvider);
   return result.user;
@@ -114,7 +92,6 @@ export async function logoutUser(): Promise<void> {
   await fbSignOut(auth);
 }
 
-// User Profile Helpers
 export async function getUserProfile(uid: string): Promise<UserProfile | null> {
   const path = `users/${uid}`;
   try {
@@ -202,7 +179,6 @@ export async function updateUserXPAndStreak(
   }
 }
 
-// Pronunciation Log Helpers
 export async function logPronunciationMistake(
   userId: string, 
   log: Omit<PronunciationLog, 'id' | 'createdAt'>
@@ -242,7 +218,6 @@ export async function getUserPronunciationLogs(userId: string): Promise<Pronunci
   }
 }
 
-// Practice Session Helpers
 export async function savePracticeSession(session: PracticeSession): Promise<void> {
   const path = `users/${session.userId}/sessions/${session.id}`;
   try {
@@ -279,7 +254,6 @@ export async function getUserPracticeSessions(userId: string): Promise<PracticeS
   }
 }
 
-// IELTS Assessment Persistence Helpers
 export async function saveIeltsAssessment(
   userId: string, 
   result: IeltsTestResult
@@ -287,7 +261,6 @@ export async function saveIeltsAssessment(
   const path = `users/${userId}/ieltsAssessments/${result.id}`;
   try {
     await setDoc(doc(db, 'users', userId, 'ieltsAssessments', result.id), result);
-    // Sync level and band with User profile
     await updateUserXPAndStreak(userId, 100);
     const existing = await getUserProfile(userId);
     if (existing) {
@@ -314,4 +287,4 @@ export async function getUserIeltsAssessments(userId: string): Promise<IeltsTest
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, path);
   }
-}
+      }
