@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { WebSocketServer } from 'ws';
 import dotenv from 'dotenv';
-import { setupLiveWebSocket, assessPronunciationText, generateCoachSpokenTurn } from './server/geminiService';
+import { setupGeminiLiveBridge, assessPronunciationText } from './server/geminiService';
 
 dotenv.config();
 
@@ -28,25 +28,14 @@ app.post('/api/assess-pronunciation', async (req, res) => {
   }
 });
 
-app.post('/api/chat-coach', async (req, res) => {
-  try {
-    const { history, scenarioInstruction, level } = req.body;
-    const text = await generateCoachSpokenTurn(history || [], scenarioInstruction || '', level || 'B1');
-    res.json({ text });
-  } catch (err: any) {
-    res.status(500).json({ error: err?.message || 'Chat failed' });
-  }
-});
-
 // Setup Live API WebSocket server on path /api/live
 const wss = new WebSocketServer({ noServer: true });
-setupLiveWebSocket(wss);
 
 server.on('upgrade', (request, socket, head) => {
   const url = new URL(request.url || '', `http://${request.headers.host}`);
   if (url.pathname === '/api/live') {
     wss.handleUpgrade(request, socket, head, (ws) => {
-      wss.emit('connection', ws, request);
+      setupGeminiLiveBridge(ws);
     });
   }
 });
