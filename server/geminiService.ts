@@ -29,6 +29,7 @@ export function setupGeminiLiveBridge(clientWs: WebSocket) {
           liveSession = await ai.live.connect({
             model: 'gemini-3.8-flash',
             config: {
+              // @ts-ignore
               responseModalities: ['AUDIO'],
               speechConfig: {
                 voiceConfig: {
