@@ -74,11 +74,11 @@ const PERSONAS: PersonaInfo[] = [
 ];
 
 const PERSONA_PROMPTS: Record<string, string> = {
-  younis: 'You are "Younis", a friendly, witty Egyptian English coach. Speak 80% natural English and 20% warm Egyptian slang. Keep turns very brief (1-2 sentences).',
-  nour: 'You are "Nour", a very gentle, encouraging English tutor for beginners. Speak slowly, clearly, and warmly with simple words.',
-  hesham: 'You are "Eng. Hesham", a sharp Big Tech technical interviewer. Ask insightful professional questions and evaluate candidate responses concisely.',
-  jameel: 'You are "Uncle Jameel", a 93-year-old refined British gentleman. Use classic British idioms and captivating historical reflections.',
-  natalie: 'You are "Natalie", an energetic native American youth from California. Use modern natural slang and enthusiastic cadence.',
+  nour: 'You are "Nour", a very gentle, encouraging English tutor for beginners. Speak slowly, clearly, and warmly with simple words. Start the call by saying hello and asking how the student is doing.',
+  younis: 'You are "Younis", a friendly, witty Egyptian English coach. Speak 80% natural English and 20% warm Egyptian slang. Keep turns very brief (1-2 sentences). Say a witty greeting to start.',
+  hesham: 'You are "Eng. Hesham", a Big Tech technical interviewer. Ask insightful professional questions concisely. Greet the candidate professionally to begin.',
+  jameel: 'You are "Uncle Jameel", a 93-year-old refined British gentleman. Greet the student with old-school British charm.',
+  natalie: 'You are "Natalie", an energetic American youth from California. Use modern slang and say a high-energy "What\'s up!" to start.',
 };
 
 export const VoiceCallHub: React.FC<VoiceCallHubProps> = () => {
@@ -96,14 +96,14 @@ export const VoiceCallHub: React.FC<VoiceCallHubProps> = () => {
   const [isAiSpeaking, setIsAiSpeaking] = useState<boolean>(false);
   const [audioLevel, setAudioLevel] = useState<number>(0);
 
-  // API Key Management Modal for Mobile
+  // API Key Storage
   const [apiKey, setApiKey] = useState<string>(() => {
     return localStorage.getItem('teachme_gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || '';
   });
   const [apiKeyModalOpen, setApiKeyModalOpen] = useState<boolean>(false);
   const [tempApiKey, setTempApiKey] = useState<string>('');
 
-  // Sub-Modals
+  // Modals
   const [voiceModalOpen, setVoiceModalOpen] = useState<boolean>(false);
   const [topicModalOpen, setTopicModalOpen] = useState<boolean>(false);
   const [drillModalOpen, setDrillModalOpen] = useState<boolean>(false);
@@ -146,7 +146,7 @@ export const VoiceCallHub: React.FC<VoiceCallHubProps> = () => {
     setSelectedVoice(p.defaultVoice);
   };
 
-  // Direct WebSocket Connection to Google Gemini Live Multimodal Service
+  // Safe Bi-directional Live Call Engine
   const startVoiceCall = async () => {
     const activeKey = apiKey.trim();
     if (!activeKey) {
@@ -155,21 +155,21 @@ export const VoiceCallHub: React.FC<VoiceCallHubProps> = () => {
     }
 
     try {
-      setCallStatusText(language === 'ar' ? 'جاري الاتصال بسيرفر جوجل...' : 'Connecting to Google AI node...');
+      setCallStatusText(language === 'ar' ? 'جاري الاتصال بجوجل...' : 'Connecting to Google AI...');
       audioPlayerRef.current = new LiveAudioPlayer();
 
-      // Direct Client-to-Google Live Endpoint
-      const wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent?key=${encodeURIComponent(activeKey)}`;
+      // Official Google Multimodal Live Endpoint
+      const wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${encodeURIComponent(activeKey)}`;
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
-      ws.onopen = async () => {
-        setCallStatusText(language === 'ar' ? 'متصل ومباشر - تحدث الآن' : 'Live Connected - Speak now');
+      ws.onopen = () => {
+        setCallStatusText(language === 'ar' ? 'جاري تهيئة جلسة الذكاء الاصطناعي...' : 'Configuring AI session...');
         setIsCalling(true);
 
-        // 1. Send Setup Handshake packet
+        // 1. Send Setup Handshake packet ONLY (Do NOT send mic audio yet!)
         const systemPrompt = `${PERSONA_PROMPTS[selectedPersona]} Student level: ${profile?.level || 'A1'}. ${
-          activeTopic ? `Roleplay context: ${activeTopic.prompt}` : ''
+          activeTopic ? `Roleplay scenario: ${activeTopic.prompt}` : ''
         }`;
 
         const setupPayload = {
@@ -191,29 +191,6 @@ export const VoiceCallHub: React.FC<VoiceCallHubProps> = () => {
           },
         };
         ws.send(JSON.stringify(setupPayload));
-
-        // 2. Start Microphone Streaming (16kHz PCM)
-        const stopRecorder = await createPcmAudioRecorder(
-          (base64Pcm16k) => {
-            if (ws.readyState === WebSocket.OPEN && !isMuted) {
-              const audioPacket = {
-                realtimeInput: {
-                  mediaChunks: [
-                    {
-                      mimeType: 'audio/pcm;rate=16000',
-                      data: base64Pcm16k,
-                    },
-                  ],
-                },
-              };
-              ws.send(JSON.stringify(audioPacket));
-            }
-          },
-          (level) => {
-            setAudioLevel(level);
-          }
-        );
-        stopRecorderRef.current = stopRecorder;
       };
 
       ws.onmessage = async (event) => {
@@ -224,7 +201,47 @@ export const VoiceCallHub: React.FC<VoiceCallHubProps> = () => {
           }
           const msg = JSON.parse(textData);
 
-          // Handle incoming audio stream from Google
+          // 2. WAIT FOR setupComplete BEFORE STREAMING MIC AUDIO!
+          if (msg.setupComplete) {
+            setCallStatusText(language === 'ar' ? 'متصل - استمع وتحدث الآن' : 'Live Connected - Speak now');
+
+            // Trigger AI to speak first greeting
+            ws.send(JSON.stringify({
+              clientContent: {
+                turns: [
+                  {
+                    role: 'user',
+                    parts: [{ text: 'Hello! Please introduce yourself and start our conversation now.' }],
+                  },
+                ],
+                turnComplete: true,
+              },
+            }));
+
+            // Now, and only now, safely activate the microphone recorder!
+            const stopRecorder = await createPcmAudioRecorder(
+              (base64Pcm16k) => {
+                if (ws.readyState === WebSocket.OPEN && !isMuted) {
+                  ws.send(JSON.stringify({
+                    realtimeInput: {
+                      mediaChunks: [
+                        {
+                          mimeType: 'audio/pcm;rate=16000',
+                          data: base64Pcm16k,
+                        },
+                      ],
+                    },
+                  }));
+                }
+              },
+              (level) => {
+                setAudioLevel(level);
+              }
+            );
+            stopRecorderRef.current = stopRecorder;
+          }
+
+          // 3. Play incoming voice chunks from Google
           if (msg.serverContent?.modelTurn?.parts) {
             for (const part of msg.serverContent.modelTurn.parts) {
               if (part.inlineData && part.inlineData.data) {
@@ -234,7 +251,7 @@ export const VoiceCallHub: React.FC<VoiceCallHubProps> = () => {
             }
           }
 
-          // Handle Barge-in interruption
+          // Handle interruption (Barge-in)
           if (msg.serverContent?.interrupted) {
             audioPlayerRef.current?.interrupt();
             setIsAiSpeaking(false);
@@ -244,22 +261,23 @@ export const VoiceCallHub: React.FC<VoiceCallHubProps> = () => {
             setIsAiSpeaking(false);
           }
         } catch (e) {
-          console.error('Error parsing Google Live packet:', e);
+          console.error('Error in live packet processing:', e);
         }
       };
 
       ws.onerror = (err) => {
-        console.error('WebSocket connection failure:', err);
-        setCallStatusText(language === 'ar' ? 'مفتاح API غير صالح أو الاتصال تعذر' : 'Invalid API Key or network error');
+        console.error('WebSocket error:', err);
+        setCallStatusText(language === 'ar' ? 'فشل الاتصال: تحقق من المفتاح والإنترنت' : 'Connection failed');
         endVoiceCall();
       };
 
-      ws.onclose = () => {
+      ws.onclose = (event) => {
+        setCallStatusText(language === 'ar' ? `انتهت المكالمة (${event.code})` : `Call ended (${event.code})`);
         endVoiceCall();
       };
 
     } catch (error: any) {
-      console.error('Failed to start direct voice call:', error);
+      console.error('Failed to initiate live session:', error);
       alert(error.message || 'Microphone error');
       endVoiceCall();
     }
@@ -298,7 +316,6 @@ export const VoiceCallHub: React.FC<VoiceCallHubProps> = () => {
     setIsCalling(false);
     setIsAiSpeaking(false);
     setAudioLevel(0);
-    setCallStatusText(language === 'ar' ? 'تم إنهاء المكالمة' : 'Call ended');
   };
 
   const currentPersonaObj = PERSONAS.find((p) => p.id === selectedPersona) || PERSONAS[0];
@@ -355,7 +372,7 @@ export const VoiceCallHub: React.FC<VoiceCallHubProps> = () => {
         </div>
       </div>
 
-      {/* Main Studio Calling Card */}
+      {/* Main Calling Hub Card */}
       <div className="w-full bg-gradient-to-b from-[#0c1222] to-[#080d19] rounded-3xl border border-slate-800 p-6 flex flex-col items-center relative overflow-hidden shadow-2xl">
         
         {/* Status Header */}
@@ -499,7 +516,7 @@ export const VoiceCallHub: React.FC<VoiceCallHubProps> = () => {
         />
       </div>
 
-      {/* API Key Modal for Standalone Android */}
+      {/* API Key Modal */}
       {apiKeyModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4">
@@ -508,7 +525,7 @@ export const VoiceCallHub: React.FC<VoiceCallHubProps> = () => {
               <button onClick={() => setApiKeyModalOpen(false)} className="text-slate-400 text-sm">✕</button>
             </div>
             <p className="text-xs text-slate-300 leading-relaxed">
-              ضع مفتاحك المجاني من Google AI Studio ليعمل الصوت مباشرة داخل التطبيق بدون أي سيرفر خارجي:
+              ضع مفتاحك من Google AI Studio ليعمل الصوت مباشرة داخل التطبيق:
             </p>
             <input
               type="password"
